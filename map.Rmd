@@ -1,0 +1,90 @@
+---
+title: "maps"
+author: "Devin Spencer"
+date: "December 5, 2015"
+output: 
+  html_document:
+    toc: yes
+    number_sections: yes
+---
+## Create Map of Points
+
+# Install Packages 
+install.packages(c('sp','rgdal','raster','leaflet','dplyr'))
+
+```{r}
+# load package
+suppressWarnings(suppressPackageStartupMessages({
+  library(leaflet)
+  library(rgdal)
+  
+}))
+
+# set paths
+gdb = "/Users/devinspencer/Documents/esm2964f:lab5/golf.gdb"
+
+# read points from geodatabase
+pts = readOGR(gdb, 'pts_tree', verbose=F)
+
+# project points to geographic projection
+pts_gcs = spTransform(pts, leaflet:::epsg4326)
+
+# create map of points
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(data = pts_gcs) 
+```
+  
+```{r}
+# create map with popups
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(data = pts_gcs, popup=~sprintf('id: %d', id)) 
+```
+  
+```{r}
+# create map with Stamen.Watercolor basemap
+leaflet() %>%  
+  addProviderTiles('Stamen.Watercolor') %>%
+  addMarkers(data = pts_gcs, popup=~sprintf('id: %d', id))
+```
+
+```{r}
+# create map with Stamen.Watercolor basemap
+leaflet() %>%  
+  addProviderTiles('Stamen.Watercolor') %>%
+  addMarkers(data = pts_gcs, popup=~sprintf('id: %d', id)) %>%
+  setView(lng=mean(pts_gcs@bbox[1,]), lat=mean(pts_gcs@bbox[2,]), zoom=16)
+```
+
+```{r}
+# create map with Stamen.Toner basemap
+leaflet() %>%  
+  addProviderTiles('Stamen.Toner') %>%
+  addMarkers(data = pts_gcs, popup=~sprintf('id: %d', id))
+```
+
+```{r}
+# create map with Esri.WorldImagry basemap
+leaflet() %>%  
+  addProviderTiles('MapQuestOpen.Aerial') %>%
+  addMarkers(data = pts_gcs, popup=~sprintf('id: %d', id))
+```
+
+```{r}
+  # read points, lines and polygons from geodatabase
+pts_gcs  = readOGR(gdb, 'pts_tree', verbose=F)    %>% spTransform(leaflet:::epsg4326)
+lns_gcs  = readOGR(gdb, 'lns_cart', verbose=F)    %>% spTransform(leaflet:::epsg4326)
+plys_gcs = readOGR(gdb, 'plys_bunker', verbose=F) %>% spTransform(leaflet:::epsg4326)
+
+# map with lines and polygons
+leaflet() %>%  
+  addProviderTiles('Stamen.Toner') %>%
+  addPolygons(stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5, color = "gold", data=plys_gcs)%>% 
+  addPolylines(data=lns_gcs) %>%
+  addMarkers(data=pts_gcs, popup=~sprintf('id: %d', id))
+```
+
+
+  
+  
